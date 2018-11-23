@@ -1,0 +1,204 @@
+#prueba de lectura de .txt
+from Tkinter import*
+import serial
+import time
+import sys
+import time
+
+
+global estado
+estado = 0
+
+def grabar1():
+	global estado
+	estado = 1
+	print(estado)
+
+def reproducir1():
+	global estado
+	estado = 2
+	print(estado)
+
+def detener():
+	global estado
+	estado = 0
+	print(estado)
+#---------------------------
+def grabar2():
+	global estado
+	estado = 3
+	print(estado)
+
+def reproducir2():
+	global estado
+	estado = 4
+	print(estado)
+#-------------------------
+def grabar3():
+	global estado
+	estado = 5
+	print(estado)
+
+def reproducir3():
+	global estado
+	estado = 6
+	print(estado)
+
+
+
+#creacion de ventana
+ventana = Tk()
+#detalles de la ventna
+ventana.title("Brazo robotico")
+ventana.configure(background='lightblue')
+ventana.geometry("500x350+500+250")
+
+#nombre:
+etiqueta_rut3 = Label(ventana, text="Rutina 3:", font=("Verdana",14), background='lightblue')
+etiqueta_rut3.pack()
+etiqueta_rut3.place(x=200, y=225)
+#botones
+grabar_rutina3 = Button(ventana, text="Grabar rutina",command=grabar3)
+grabar_rutina3.pack()
+grabar_rutina3.place(x=75, y=280)
+
+	
+reproducir_rutina3 = Button(ventana, text="Reproducir rutina",command=reproducir3)
+reproducir_rutina3.pack()
+reproducir_rutina3.place(x=200, y=280)
+
+detener_rutina3 = Button(ventana, text="Detener",command=detener)
+detener_rutina3.pack()
+detener_rutina3.place(x=350, y=280)
+
+
+#nombre2:
+etiqueta_rut2 = Label(ventana, text="Rutina 2:", font=("Verdana",14), background='lightblue')
+etiqueta_rut2.pack()
+etiqueta_rut2.place(x=200, y=125)
+#botones
+grabar_rutina2 = Button(ventana, text="Grabar rutina",command=grabar2)
+grabar_rutina2.pack()
+grabar_rutina2.place(x=75, y=180)
+
+	
+reproducir_rutina2 = Button(ventana, text="Reproducir rutina",command=reproducir2)
+reproducir_rutina2.pack()
+reproducir_rutina2.place(x=200, y=180)
+
+detener_rutina2 = Button(ventana, text="Detener",command=detener)
+detener_rutina2.pack()
+detener_rutina2.place(x=350, y=180)
+
+#------------------------------
+#nombre2:
+etiqueta_rut1 = Label(ventana, text="Rutina 1:", font=("Verdana",14), background='lightblue')
+etiqueta_rut1.pack()
+etiqueta_rut1.place(x=200, y=25)
+#botones
+grabar_rutina1 = Button(ventana, text="Grabar rutina",command=grabar1)
+grabar_rutina1.pack()
+grabar_rutina1.place(x=75, y=80)
+
+	
+reproducir_rutina1 = Button(ventana, text="Reproducir rutina",command=reproducir1)
+reproducir_rutina1.pack()
+reproducir_rutina1.place(x=200, y=80)
+
+detener_rutina1 = Button(ventana, text="Detener",command=detener)
+detener_rutina1.pack()
+detener_rutina1.place(x=350, y=80)
+
+#----------------------------------
+
+#ventana.mainloop()
+
+ser= serial.Serial(port='COM7',baudrate=9600, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS, timeout=0)
+while 1:
+	ser.flushInput()
+	ser.flushOutput()
+	time.sleep(.2)
+	dato_pic=ser.read()
+
+#----------------------------------------------------rutina 1-----------------------------------------------------------------------------
+	while estado == 0: #estado sin hacer nada
+		time.sleep(.5)
+		print('sin hacer nada')
+		ventana.update()
+
+
+	while estado == 1: #estado para leer el puerto y escribirlo en un txt (grabar rutina)
+
+		grabar = open ('texto_prueba.txt','a')
+		try:
+			print ord(dato_pic)
+			dato_read = ord(dato_pic)
+			grabar.writelines(dato_read)
+		except:
+			#grabar.writelines(dato_read) #revisar que dato quiero enviar
+			print "error"
+
+		grabar.close()
+		ventana.update()
+
+
+	while estado == 2: #estado para reproducir el documento txt y enviarlo al puerto (repetir rutina)
+	
+		grabacion = open ('texto_prueba.txt','r')
+		lineas = grabacion.readlines()
+		for elemento in lineas:
+			print elemento
+			elemento_listo = chr(elemento)
+			ser.write(elemento_listo)
+		grabacion.close()
+
+		ventana.update()
+
+#--------------------------------------------------rutina 2--------------------------------------------------------------
+	while estado == 3: 
+
+		grabar2 = open ('texto_prueba2.txt','a')
+		try:
+			print ord(dato_pic)
+			dato_read2 = ord(dato_pic)
+			grabar2.writelines(dato_read2)
+		except:
+			#grabar.writelines(dato_read) #revisar que dato quiero enviar
+			print "error"
+
+		grabar2.close()
+		ventana.update()
+
+	while estado == 4:
+		grabacion2 = open ('texto_prueba2.txt','r')
+		lineas2 = grabacion2.readlines()
+		for elemento in lineas2:
+			print elemento
+			elemento_listo2 = chr(elemento)
+			ser.write(elemento_listo2)
+		grabacion2.close()
+		ventana.update()
+#---------------------------------------------------rutina 3------------------------------------------------------------------------
+	while estado == 5: 
+
+		grabar3 = open ('texto_prueba3.txt','a')
+		try:
+			print ord(dato_pic)
+			dato_read3 = ord(dato_pic)
+			grabar3.writelines(dato_read3)
+		except:
+			#grabar.writelines(dato_read) #revisar que dato quiero enviar
+			print "error"
+
+		grabar3.close()
+		ventana.update()
+
+	while estado == 6:
+		grabacion3 = open ('texto_prueba3.txt','r')
+		lineas3 = grabacion3.readlines()
+		for elemento in lineas3:
+			print elemento
+			elemento_listo3 = chr(elemento)
+			ser.write(elemento_listo3)
+		grabacion3.close()
+		ventana.update()
