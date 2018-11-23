@@ -68,7 +68,7 @@ START
     
     BANKSEL	TRISA		    ;BANCO 1
     CLRF	TRISA
-    MOVLW	B'00110000'
+    MOVLW	B'00110001'
     MOVWF	TRISB
     CLRF	TRISC
     CLRF	TRISD
@@ -233,26 +233,11 @@ CHECKADC:
     BTFSC   ADCON0, GO		    ;LOOP HASTA QUE TERMINE DE CONVERTIR
     GOTO    CHECKADC
     BCF	    PIR1, ADIF		    ;LIMPIAMOS LA BANDERA DEL ADC
-    ;MOVF    ADRESH, W
-    ;MOVWF   SERVO_3
-    
     RRF	    ADRESH, F		
     RRF	    ADRESH, F
     RRF	    ADRESH, W		    ;LE QUITAMOS LOS 3 BITS MENOS SIGNIFICATIVOS A LA CONVERSION
     ANDLW   B'00011111'		
     MOVWF   CCPR1L		    ;MOVEMOS EL VALOR HACIA EL PERÃ?ODO DEL PWM, ROTAMOS PARA LOGRAR SOLO USAR EL TIEMPO EN ALTO DEL PWM
- 
-;CHECK_TXIF_3
- ;   MOVFW   SERVO_3		    ; ENVÍA PORTB POR EL TX
-  ;  MOVWF   TXREG
-   ; BTFSS   PIR1, TXIF
-    ;GOTO    $-1    
-    
-;CHECK_RCIF_3			    ; RECIBE EN RX Y MUEVE EL SERVO
- ;   BTFSS   PIR1, RCIF
-  ;  GOTO    CHECK_TXIF_3
-   ; BCF	    PIR1, RCIF
-    ;CALL    ACTSERVO_3
     
 ;*******************************************************************************
 ;PROCESO DEL CCP2
@@ -267,28 +252,157 @@ CHECKADC2:
     BTFSC   ADCON0, GO		    ;LOOP HASTA QUE TERMINE DE CONVERTIR
     GOTO    CHECKADC2
     BCF	    PIR1, ADIF		    ;LIMPIAMOS LA BANDERA DEL ADC
-    ;MOVF    ADRESH, W
-    ;MOVWF   SERVO_4    
-    
     RRF	    ADRESH, F		
     RRF	    ADRESH, F
     RRF	    ADRESH, W		    ;LE QUITAMOS LOS 3 BITS MENOS SIGNIFICATIVOS A LA CONVERSION
     ANDLW   B'00011111'		
     MOVWF   CCPR2L		    ;MOVEMOS EL VALOR HACIA EL PERÃ?ODO DEL PWM, ROTAMOS PARA LOGRAR SOLO USAR EL TIEMPO EN ALTO DEL PWM
-    
-;CHECK_TXIF_4
- ;   MOVFW   SERVO_4		    ; ENVÍA PORTB POR EL TX
-  ;  MOVWF   TXREG
-   ; BTFSS   PIR1, TXIF
-    ;GOTO    $-1    
-    
-;CHECK_RCIF_4			    ; RECIBE EN RX Y MUEVE EL SERVO
-;    BTFSS   PIR1, RCIF
-;    GOTO    CHECK_TXIF_4
-;    BCF	    PIR1, RCIF
-;    CALL    ACTSERVO_4
-    
     GOTO    INICIO		    ;LOOP INFINITO
+ 
+CAMBIO
+CALL DELAY2
+CALL DELAY2
+BSF PORTB, 1
+ 
+INICIO_2
+    BTFSC   PORTB, RB0
+    GOTO    CAMBIO2
+    
+;*******************************************************************************
+;TRANSMISION Y RECEPCION DE DATOS DEL SERVO 1
+;******************************************************************************* 
+    BCF	    ADCON0, CHS3
+    BSF	    ADCON0, CHS2
+    BSF	    ADCON0, CHS1
+    BSF	    ADCON0, CHS0
+    CALL    DELAY2
+    BSF     ADCON0, GO	    ;INICIA LA CONVERSIÓN
+CHECK_AD1
+    BTFSC   ADCON0, GO			; revisa que terminó la conversión
+    GOTO    $-1
+    BCF	    PIR1, ADIF			; borramos la bandera del adc
+    MOVF    ADRESH, W
+    MOVWF   SERVO_1			; mueve adresh al puerto D
+    
+CHECK_RCIF1			    ; RECIBE EN RX Y MUEVE EL SERVO
+    BTFSS   PIR1, RCIF
+    GOTO    CHECK_TXIF1
+    BCF	    PIR1, RCIF
+    ;CALL    ACTSERVO_1
+    BTFSC   PIR1, TMR2IF	    ;VERIFICACION DE BANDERA DE INTERRUPCION TIMER2
+    CALL    PWM1_2		    ;SE LLAMA A LA SUBRUTINA DE PWM
+    BCF	    PORTC, RC0
+ 
+CHECK_TXIF1
+    MOVFW   SERVO_1		    ; ENVÍA PORTB POR EL TX
+    MOVWF   TXREG
+    BTFSS   PIR1, TXIF
+    GOTO    $-1
+    
+;*******************************************************************************
+;TRANSMISION Y RECEPCION DE DATOS DEL SERVO 2
+;******************************************************************************* 
+    BCF	    ADCON0, CHS3
+    BSF	    ADCON0, CHS2
+    BSF	    ADCON0, CHS1
+    BCF	    ADCON0, CHS0
+    CALL    DELAY2
+    BSF     ADCON0, GO	    ;INICIA LA CONVERSIÓN
+CHECK_AD2
+    BTFSC   ADCON0, GO			; revisa que terminó la conversión
+    GOTO    $-1
+    BCF	    PIR1, ADIF			; borramos la bandera del adc
+    MOVF    ADRESH, W
+    MOVWF   SERVO_2			; mueve adresh al puerto D
+    
+CHECK_RCIF2			    ; RECIBE EN RX Y MUEVE EL SERVO
+    BTFSS   PIR1, RCIF
+    GOTO    CHECK_TXIF2
+    BCF	    PIR1, RCIF
+    ;CALL    ACTSERVO_2
+    BTFSC   PIR1, TMR2IF	    ;VERIFICACION DE BANDERA DE INTERRUPCION TIMER2
+    CALL    PWM2_2		    ;SE LLAMA A LA SUBRUTINA DE PWM
+    BCF	    PORTC, RC3
+ 
+CHECK_TXIF2
+    MOVFW   SERVO_2		    ; ENVÍA PORTB POR EL TX
+    MOVWF   TXREG
+    BTFSS   PIR1, TXIF
+    GOTO    $-1
+ 
+;*******************************************************************************
+;TRANSMISION Y RECEPCION DE DATOS DEL SERVO 3
+;******************************************************************************* 
+    BSF	    ADCON0, CHS3
+    BSF	    ADCON0, CHS2
+    BCF	    ADCON0, CHS1
+    BSF	    ADCON0, CHS0
+    CALL    DELAY2
+    BSF     ADCON0, GO	    ;INICIA LA CONVERSIÓN
+CHECK_AD3
+    BTFSC   ADCON0, GO			; revisa que terminó la conversión
+    GOTO    $-1
+    BCF	    PIR1, ADIF			; borramos la bandera del adc
+    MOVF    ADRESH, W
+    MOVWF   SERVO_3			; mueve adresh al puerto D
+    
+CHECK_RCIF3			    ; RECIBE EN RX Y MUEVE EL SERVO
+    BTFSS   PIR1, RCIF
+    GOTO    CHECK_TXIF3
+    BCF	    PIR1, RCIF
+    CALL    ACTSERVO_3
+    ;RRF	    RCREG, F		
+    ;RRF	    RCREG, F
+    ;RRF	    RCREG, W	    ; LE QUITAMOS LOS 3 BITS MENOS SIGNIFICATIVOS A LA CONVERSION
+    ;ANDLW   B'00011111'		
+    ;MOVWF   CCPR2L	    ; MOVEMOS EL VALOR HACIA EL PERÃ?ODO DEL PWM, ROTAMOS PARA LOGRAR SOLO USAR EL TIEMPO EN ALTO DEL PWM
+ 
+CHECK_TXIF3
+    MOVFW   SERVO_3		    ; ENVÍA PORTB POR EL TX
+    MOVWF   TXREG
+    BTFSS   PIR1, TXIF
+    GOTO    $-1
+    
+;*******************************************************************************
+;TRANSMISION Y RECEPCION DE DATOS DEL SERVO 4
+;******************************************************************************* 
+    BSF	    ADCON0, CHS3
+    BCF	    ADCON0, CHS2
+    BSF	    ADCON0, CHS1
+    BSF	    ADCON0, CHS0
+    CALL    DELAY2
+    BSF     ADCON0, GO	    ;INICIA LA CONVERSIÓN
+CHECK_AD4
+    BTFSC   ADCON0, GO			; revisa que terminó la conversión
+    GOTO    $-1
+    BCF	    PIR1, ADIF			; borramos la bandera del adc
+    MOVF    ADRESH, W
+    MOVWF   SERVO_4			; mueve adresh al puerto D
+    
+CHECK_RCIF4			    ; RECIBE EN RX Y MUEVE EL SERVO
+    BTFSS   PIR1, RCIF
+    GOTO    CHECK_TXIF4
+    BCF	    PIR1, RCIF
+    CALL    ACTSERVO_4
+    ;RRF	    RCREG, F		
+    ;RRF	    RCREG, F
+    ;RRF	    RCREG, W	    ; LE QUITAMOS LOS 3 BITS MENOS SIGNIFICATIVOS A LA CONVERSION
+    ;ANDLW   B'00011111'		
+    ;MOVWF   CCPR2L	    ; MOVEMOS EL VALOR HACIA EL PERÃ?ODO DEL PWM, ROTAMOS PARA LOGRAR SOLO USAR EL TIEMPO EN ALTO DEL PWM
+ 
+CHECK_TXIF4
+    MOVFW   SERVO_4		    ; ENVÍA PORTB POR EL TX
+    MOVWF   TXREG
+    BTFSS   PIR1, TXIF
+    GOTO    $-1
+
+GOTO INICIO_2
+
+CAMBIO2
+CALL DELAY2
+CALL DELAY2
+BCF PORTB, 1
+GOTO INICIO
     
 ;*******************************************************************************
 ;SUBRUTINAS DE PWM GENERADOS
@@ -299,14 +413,26 @@ PWM1
     GOTO    $-1			    ;IR A LA POSICION DEL PC - 1 
     RETURN
     
+PWM1_2
+    BSF	    PORTC, RC0    
+    INCFSZ  RCREG, F
+    GOTO    $-1			    ;IR A LA POSICION DEL PC - 1 
+    RETURN
+    
 PWM2
     BSF	    PORTC, RC3
     INCFSZ  ADRESH, F
     GOTO    $-1			    ;IR A LA POSICION DEL PC - 1
     RETURN
+    
+PWM2_2
+    BSF	    PORTC, RC3
+    INCFSZ  RCREG, F
+    GOTO    $-1			    ;IR A LA POSICION DEL PC - 1
+    RETURN
  
 ;*******************************************************************************
-;SUBRUTINAS DE PWM DEL CCP2
+;SUBRUTINAS DE PWM DEL CCP1
 ;*******************************************************************************
  ACTSERVO_3
     CLRF    CCPR1L
