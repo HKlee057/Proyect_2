@@ -1,8 +1,8 @@
 ;*******************************************************************************
-;    Filename:	LAB 8                                                         *
+;    Filename:	PROYECTO BRAZO                                                         *
 ;    Date: 18/10/2018                                                          *
 ;    File Version:                                                             *
-;    Author: HECTOR KLEE                                                       *
+;    Author: HECTOR KLEE                                                      *
 ;    Company:                                                                  *
 ;    Description:                                                              *
 ;                                                                              *
